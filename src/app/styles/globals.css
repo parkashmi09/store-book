@@ -1,0 +1,18 @@
+/* Add these styles for the zoom effect */
+.h-screen-85 {
+    height: 85vh;
+}
+
+.magnifier-wrapper {
+    position: relative;
+    overflow: hidden;
+    cursor: zoom-in;
+}
+
+.magnifier-wrapper img {
+    transition: transform 0.3s ease;
+}
+
+.magnifier-wrapper:hover img {
+    transform: scale(2);
+}
