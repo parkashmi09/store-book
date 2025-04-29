@@ -1,4 +1,4 @@
 
-export const API_URL="https://api.targetboardstore.com"
+export const API_URL="https://storebackend-wy02.onrender.com/"
 
 //
