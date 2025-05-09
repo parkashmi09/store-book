@@ -49,7 +49,7 @@ export default function RootLayout({
       {/*</body>*/}
       {/* <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
  */}
-      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js"></Script>
       <Script type="text/javascript" id="hs-script-loader" async defer src="//js-na1.hs-scripts.com/46101493.js"></Script>
     </html>
   );
