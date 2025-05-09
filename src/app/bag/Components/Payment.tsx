@@ -29,6 +29,7 @@ const Payment = ({
   const router = useRouter();
   const [data, setData] = useState<any>([]);
   const [isMobile, setIsMobile] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
   let user: any = sessionStorage.getItem("user") || "{}";
   user = JSON.parse(user);
@@ -37,6 +38,25 @@ const Payment = ({
     // Check if device is mobile
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
     getProducts(productIds);
+
+    const loadRazorpay = () => {
+      return new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.async = true;
+        script.onload = () => {
+          setRazorpayLoaded(true);
+          resolve(true);
+        };
+        script.onerror = () => {
+          console.error("Failed to load Razorpay script");
+          resolve(false);
+        };
+        document.body.appendChild(script);
+      });
+    };
+
+    loadRazorpay();
   }, [productIds]);
 
   const getProducts = async (para: string[]) => {
@@ -151,6 +171,11 @@ const Payment = ({
 
   const checkoutHandler = async (amount: any) => {
     try {
+      if (!razorpayLoaded) {
+        toast.error("Payment gateway is still loading. Please try again.");
+        return;
+      }
+
       const key = "rzp_live_5FnnvEf6D23aU2";
       const token: any = sessionStorage.getItem("token");
 
@@ -274,7 +299,14 @@ const Payment = ({
         },
       };
       //@ts-ignore
-      const razor = new window.Razorpay(options);
+      // const razor = new window.Razorpay(options);
+      // Type assertion for Razorpay
+      const Razorpay = (window as any).Razorpay;
+      if (!Razorpay) {
+        throw new Error("Razorpay not available");
+      }
+
+      const razor = new Razorpay(options);
 
       // Add specific event handlers for QR code
       razor.on("payment.failed", function (response: any) {
