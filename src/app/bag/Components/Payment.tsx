@@ -74,34 +74,6 @@ const Payment = ({
     }
   };
 
-  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).Razorpay) {
-      setRazorpayLoaded(true);
-    } else {
-      // Fallback if script doesn't load automatically
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.async = true;
-      script.onload = () => setRazorpayLoaded(true);
-      document.body.appendChild(script);
-    }
-  }, []);
-
-  const checkBrowserSupport = () => {
-    // Basic feature detection
-    if (typeof window === "undefined") return false; // SSR case
-    if (!("Promise" in window)) return false;
-    if (!("fetch" in window)) return false;
-
-    // Razorpay specific requirements
-    const userAgent = navigator.userAgent;
-    const isIE = /MSIE|Trident/.test(userAgent);
-
-    return !isIE;
-  };
-
   async function createOrder(
     razorpay_order_id: any,
     razorpay_payment_id: any,
@@ -179,13 +151,6 @@ const Payment = ({
 
   const checkoutHandler = async (amount: any) => {
     try {
-      if (!checkBrowserSupport()) {
-        toast.error(
-          "Your browser is not supported. Please try Chrome, Firefox, or Edge."
-        );
-        return;
-      }
-
       const key = "rzp_live_5FnnvEf6D23aU2";
       const token: any = sessionStorage.getItem("token");
 
@@ -340,10 +305,7 @@ const Payment = ({
         disabled={!selectedAddressId}
         onClick={() => checkoutHandler(amount)}
       >
-        {razorpayLoaded
-          ? `Pay ₹${parseFloat(amount) + parseFloat(shipping_charge)}`
-          : "Loading payment..."}
-        {/* Pay ₹{parseFloat(amount) + parseFloat(shipping_charge)} */}
+        Pay ₹{parseFloat(amount) + parseFloat(shipping_charge)}
       </button>
       <Toaster
         position="top-center"
