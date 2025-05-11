@@ -64,7 +64,6 @@
 //     </html>
 //   );
 // }
-
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -90,7 +89,7 @@ export default function RootLayout({
         <Script
           id="google-analytics"
           strategy="lazyOnload"
-          src={`https://www.googletagmanager.com/gtag/js?id=G-516DGJ8HHP`}
+          src="https://www.googletagmanager.com/gtag/js?id=G-516DGJ8HHP"
         />
         <Script id="google-analytics-config" strategy="lazyOnload">
           {`
@@ -118,6 +117,20 @@ export default function RootLayout({
           id="hotjar-analytics"
           strategy="lazyOnload"
           src="//js-na1.hs-scripts.com/46101493.js"
+        />
+
+        {/* Zoho SalesIQ */}
+        <Script id="zoho-init" strategy="lazyOnload">
+          {`
+            window.$zoho = window.$zoho || {};
+            $zoho.salesiq = $zoho.salesiq || { ready: function() {} };
+          `}
+        </Script>
+        <Script
+          id="zoho-widget"
+          strategy="lazyOnload"
+          src="https://salesiq.zohopublic.in/widget?wc=siq938277fc08b42ecbbb8bd8c59accc9f4608c941b1bff1d9cd4ef9dc6db5c45f7"
+          defer
         />
       </body>
     </html>
