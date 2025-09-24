@@ -1,5 +1,5 @@
 "use client"
-import {FaSearch, FaShoppingBag, FaStar, FaStore, FaUserCircle} from "react-icons/fa";
+import {FaSearch, FaShoppingBag, FaStar, FaStore, FaUserCircle, FaHome, FaDownload, FaPhone, FaBook, FaClipboardList} from "react-icons/fa";
 import React, { useState, useEffect, useRef } from "react";
 import Marquee from "react-fast-marquee";
 import Link from "next/link";
@@ -31,7 +31,7 @@ const Navbar = () => {
 
     const { fcmToken,notificationPermissionStatus } = useFcmToken();
     // Use the token as needed
-    fcmToken && console.log('FCM token:', fcmToken);
+    // fcmToken && console.log('FCM token:', fcmToken);
 
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -279,7 +279,9 @@ const Navbar = () => {
 
 
     return(
-        <>
+        <div className="drawer">
+            <input id="mobileDrawer" type="checkbox" className="drawer-toggle" />
+            <div className="drawer-content">
             <div id="hubspot-form-wrapper" />
             {
                 pathname==" " || pathname=="/" && marqueeText ?
@@ -293,28 +295,10 @@ const Navbar = () => {
 
             <div className="navbar bg-base-100  shadow-sm rounded-none sticky top-0 z-30 text-base-content   bg-opacity-90 backdrop-blur transition-shadow  duration-100 ">
                 <div className="navbar-start">
-                    <div className="dropdown">
-                        <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
+                    <div className="lg:hidden">
+                        <label htmlFor="mobileDrawer" className="btn btn-ghost">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" /></svg>
-                        </div>
-                        <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-gray-200 border w-screen-80">
-                            {
-                                menuItems.map((item:any,key:any)=>(
-                                    <li key={key}>
-                                        <details>
-                                            <summary>{item.name}</summary>
-                                            <ul>
-                                                {
-                                                    item.sub_category.map((sub:any,keySub:any)=>(
-                                                        <Link href={`/product/category/${sub}`} className="border p-2 w-full m-1" key={keySub}>{sub}</Link>
-                                                    ))
-                                                }
-                                            </ul>
-                                        </details>
-                                    </li>
-                                ))
-                            }
-                        </ul>
+                        </label>
                     </div>
                     <Link href="/" className="btn btn-ghost uppercase text-md max-sm:text-sm max-sm:hidden p-0 max-sm:btn-sm ">
                         <Image className="animate drop-shadow-2xl " src={img} alt={"line"} height={20} width={40} />
@@ -356,12 +340,9 @@ const Navbar = () => {
                     {/*       */}
                     {/*    )*/}
                     {/*}*/}
-                    <Link href="/bag" className="btn btn-sm  btn-outline cursor-pointer shadow-xl">
-                        <FaShoppingBag />
-                        {bagCount !== "0" && bagCount}
-                    </Link>
+                 
                     {/*{!authStatus?null:<Link href="/account" className="btn btn-sm max-sm:btn-xs btn-outline !cursor-pointer shadow-xl"><FaUser/></Link>}*/}
-                    {!authStatus?<Link href="/login" className="btn btn-sm btn-neutral shadow-xl  !cursor-pointer">Login</Link>:
+                    {!authStatus?<Link href="/login" className="btn btn-sm btn-neutral shadow-xl  !cursor-pointer"><FaUser className="mr-1"/>Login</Link>:
 
                     <div className="dropdown dropdown-end">
                         <div tabIndex={0} role="button" className="btn text-xl btn-sm  btn-outline border !cursor-pointer shadow-xl"><FaUserCircle/></div>
@@ -374,6 +355,11 @@ const Navbar = () => {
                             <li onClick={handleLogout}><a>Logout</a></li>
                         </ul>
                     </div>   }
+
+                    <Link href="/bag" className="btn btn-sm  btn-outline cursor-pointer shadow-xl">
+                        <FaShoppingBag />
+                        {bagCount !== "0" && bagCount}
+                    </Link>
                 </div>
             </div>
 
@@ -419,7 +405,38 @@ const Navbar = () => {
             </div>
 
             <Toaster/>
-        </>
+            </div>
+            <div className="drawer-side z-40">
+                <label htmlFor="mobileDrawer" aria-label="close sidebar" className="drawer-overlay"></label>
+                <ul className="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
+                    <li><Link href="/"><FaHome /> Home</Link></li>
+                    <li><Link href="/account/orders"><FaClipboardList /> Orders</Link></li>
+                    <li><a href="#download"><FaDownload /> Download Our App</a></li>
+                    <li><Link href="/contact"><FaPhone /> Contact Us</Link></li>
+                    <li>
+                        <details>
+                            <summary><span className="inline-flex items-center gap-2"><FaBook /> <span>Books</span></span></summary>
+                            <ul>
+                                {menuItems?.map((item:any, key:any) => (
+                                    <li key={key}>
+                                        <details>
+                                            <summary>{item.name}</summary>
+                                            <ul>
+                                                {item.sub_category?.map((sub:any, keySub:any) => (
+                                                    <li key={keySub}>
+                                                        <Link href={`/product/category/${sub}`}>{sub}</Link>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </details>
+                                    </li>
+                                ))}
+                            </ul>
+                        </details>
+                    </li>
+                </ul>
+            </div>
+        </div>
     )
 }
 export default Navbar;

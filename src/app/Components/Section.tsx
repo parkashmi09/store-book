@@ -1,14 +1,14 @@
 "use client"
 import CardsLayout from "@/app/Components/CradsLayout";
-import {API_URL} from "@/util/base_url";
-import {useEffect, useState} from "react";
+import { API_URL } from "@/util/base_url";
+import { useEffect, useState } from "react";
 
 const Section = () => {
 
 
-    const [books,setBooks]=useState<any>([])
-    const [stationery,setStationery]=useState<any>([])
-    const [reviews,setReviews]=useState<any>([])
+    const [books, setBooks] = useState<any>([])
+    const [stationery, setStationery] = useState<any>([])
+    const [reviews, setReviews] = useState<any>([])
 
     const getProducts = async () => {
         try {
@@ -23,14 +23,14 @@ const Section = () => {
         }
     };
 
-    async function getReviews(id:any) {
+    async function getReviews(id: any) {
         try {
             const response = await fetch(`${API_URL}/review/product/${id}`)
             if (!response.ok) {
                 throw new Error('Failed to fetch products');
             }
-            const data= await response.json();
-            if(response.status==200){
+            const data = await response.json();
+            if (response.status == 200) {
                 // const index = books.findIndex((obj:any) => obj.productId === id);
                 // const index1 = stationery.findIndex((obj:any) => obj.productId === id);
                 setReviews(data.data)
@@ -51,11 +51,11 @@ const Section = () => {
         getProducts()
     }, []);
 
-    return(
-        <>
-            <CardsLayout data={books} name={"Latest Books"} action={"/product/all/books"}/>
-            <CardsLayout data={stationery} name={"Stationery"} action={"/product/all/stationery"}/>
-        </>
+    return (
+        <div className="overflow-hidden">
+            <CardsLayout data={books} name={"Latest Books"} action={"/product/all/books"} />
+            <CardsLayout data={stationery} name={"Stationery"} action={"/product/all/stationery"} />
+        </div>
     )
 }
 export default Section;
