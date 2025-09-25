@@ -36,6 +36,7 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ data }) => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>(sampleTestimonials);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Fetch testimonials from API
   useEffect(() => {
@@ -79,12 +80,18 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ data }) => {
     }
   }, [data]);
 
+  // Ensure dynamic style is only rendered on the client to prevent hydration mismatch
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   // Use provided data or fetched data
   const displayTestimonials = data?.data || testimonials;
 
   return (
     <div className="bg-black py-8 md:py-16 overflow-hidden">
-      <style>
+      {isHydrated && (
+        <style suppressHydrationWarning>
         {`
         @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
 
@@ -252,6 +259,7 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ data }) => {
         }
       `}
       </style>
+      )}
 
       {/* Loading State with Skeleton */}
       {loading && (
