@@ -62,16 +62,16 @@ const Navbar = () => {
     const [search, setSearch] = useState<any>();
 
     let user: any;
-
-    if (typeof sessionStorage !== 'undefined') {
-        user = sessionStorage.getItem('user');
-        user = user ? JSON.parse(user) : null;
+    if (typeof window !== 'undefined') {
+        const localUser = localStorage.getItem('user');
+        const sessionUser = sessionStorage.getItem('user');
+        user = localUser || sessionUser ? JSON.parse(localUser || sessionUser as string) : null;
     } else {
         user = null;
     }
 
     useEffect(() => {
-        const token = sessionStorage.getItem('token');
+        const token = typeof window !== 'undefined' ? (localStorage.getItem('token') || sessionStorage.getItem('token')) : null;
         if (token) {
             setAuthStatus(token);
         }
@@ -113,7 +113,7 @@ const Navbar = () => {
         try {
             const categoriesResponse = await fetch(`${API_URL}/categories`);
             const highlightResponse = await fetch(`${API_URL}/get-highlight/1`);
-            const token:any=sessionStorage.getItem('token')
+            const token:any=(typeof window !== 'undefined') ? (localStorage.getItem('token') || sessionStorage.getItem('token')) : null
 
            if(user){
                const response = await fetch(`${API_URL}/get-bag/${user.id}`,
@@ -161,29 +161,23 @@ const Navbar = () => {
     useEffect(() => {
         const handleStorageChange = () => {
             // @ts-ignore
-            const user = JSON.parse(sessionStorage.getItem('user'));
-            let token = sessionStorage.getItem('token');
-            // if(localStorage.getItem('guest')){
-            //     token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwaG9uZSI6IjA5ODc2NTQzMjEiLCJpYXQiOjE3MTQzOTcyNjAsImV4cCI6MTcyMjI2ODY2MH0.LOISuXKVwYM6T14y9Ua3eR5D81RNKurJCypUY85GKRE"
-            // }
-            auth(token, user ? user.phone : null)
-                .then(async (isAuthenticated) => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            let token = localStorage.getItem('token');
+
+            console.log(user,"user is like")
+            console.log(token,"token is like")
+
+            if (!token || !user?.phone) {
+                return;
+            }
+
+            auth(token, user.phone)
+                .then((isAuthenticated) => {
                     if (isAuthenticated) {
-
+                        setAuthStatus(token)
                     } else {
-                        const response = await fetch(`/api/user/logout`,)
-
-                        const data = await response.json();
-                        if (data.success) {
-                            sessionStorage.clear()
-                            // localStorage.clear()
-                            clearCookie('token')
-                            deleteCookies()
-
-                        } else if (data.status == 404 || data.status == 404) {
-
-                        } else {
-                        }
+                        // Do not auto-logout or clear storage on transient auth failure
+                        setAuthStatus("")
                     }
                 })
         };
@@ -264,17 +258,7 @@ const Navbar = () => {
         }
     };
 
-    useEffect(() => {
-        const handleUnload = () => {
-            localStorage.clear();
-        };
-
-        window.addEventListener('unload', handleUnload);
-
-        return () => {
-            window.removeEventListener('unload', handleUnload);
-        };
-    }, []);
+    // Removed auto-clearing localStorage on unload to preserve auth state
 
 
 

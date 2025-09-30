@@ -29,6 +29,8 @@ const Payment = ({
   const router = useRouter();
   const [data, setData] = useState<any>([]);
   const [isMobile, setIsMobile] = useState(false);
+  const [showReview, setShowReview] = useState(false);
+  const [reviews, setReviews] = useState<Record<string, { rating: number; comment: string; submitting?: boolean; submitted?: boolean }>>({});
 
   let user: any = sessionStorage.getItem("user") || "{}";
   user = JSON.parse(user);
@@ -66,11 +68,45 @@ const Payment = ({
         const data = await response.json();
         if (response.status === 201) {
           setData(data.data);
+          // initialize per-product review state
+          const initial: Record<string, { rating: number; comment: string; submitting?: boolean; submitted?: boolean }> = {};
+          (data.data || []).forEach((p: any) => {
+            initial[p.productId] = { rating: 0, comment: "" };
+          });
+          setReviews(initial);
         }
       } catch (error) {
         console.error("Error fetching products:", error);
         toast.error("Failed to fetch products");
       }
+    }
+  };
+
+  const submitReview = async (productId: string) => {
+    try {
+      const current = reviews[productId] || { rating: 0, comment: "" };
+      if (!current.rating) {
+        toast.error("Please select a rating");
+        return;
+      }
+      setReviews((r) => ({ ...r, [productId]: { ...current, submitting: true } }));
+      const res = await fetch(`https://api.targetboardstore.com/review/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId,
+          userId: user.id,
+          rating: current.rating,
+          comment: current.comment || "",
+        }),
+      });
+      if (!res.ok) throw new Error("Review submit failed");
+      toast.success("Thanks for your review!");
+      setReviews((r) => ({ ...r, [productId]: { ...current, submitting: false, submitted: true } }));
+    } catch (e) {
+      console.error(e);
+      toast.error("Unable to submit review");
+      setReviews((r) => ({ ...r, [productId]: { ...(r[productId] || { rating: 0, comment: "" }), submitting: false } }));
     }
   };
 
@@ -300,6 +336,8 @@ const Payment = ({
 
   return (
     <div className="w-full">
+      {/* Payment Button (kept for later use) */}
+      {/*
       <button
         className="w-full btn btn-secondary disabled:bg-blue-400 disabled:cursor-not-allowed py-3 px-6 rounded-lg font-semibold"
         disabled={!selectedAddressId}
@@ -307,6 +345,78 @@ const Payment = ({
       >
         Pay ₹{parseFloat(amount) + parseFloat(shipping_charge)}
       </button>
+      */}
+
+      {/* Ratings entry point */}
+      {!showReview ? (
+        <button
+          className="w-full btn btn-primary disabled:bg-blue-400 disabled:cursor-not-allowed py-3 px-6 rounded-lg font-semibold"
+          disabled={!selectedAddressId || data.length === 0}
+          onClick={() => setShowReview(true)}
+        >
+          Rate Purchased Products
+        </button>
+      ) : (
+        <div className="card bg-white border shadow-md mt-3">
+          <div className="card-body !p-3">
+            <h3 className="card-title">Rate your products</h3>
+            <p className="text-sm text-gray-600">Your feedback helps others shop better.</p>
+            <div className="space-y-4 mt-2">
+              {(data || []).map((p: any) => (
+                <div key={p.productId} className="border rounded-md p-2">
+                  <div className="flex items-center gap-3">
+                    <img src={p?.images?.[0]} alt={p.name} className="w-12 h-12 object-cover rounded" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{p.name}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            className={`btn btn-xs ${reviews[p.productId]?.rating >= star ? "btn-warning" : "btn-ghost"}`}
+                            onClick={() =>
+                              setReviews((r) => ({
+                                ...r,
+                                [p.productId]: { ...(r[p.productId] || { rating: 0, comment: "" }), rating: star },
+                              }))
+                            }
+                          >
+                            ★
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <textarea
+                    className="textarea textarea-bordered w-full mt-2"
+                    placeholder="Write a short review (optional)"
+                    value={reviews[p.productId]?.comment || ""}
+                    onChange={(e) =>
+                      setReviews((r) => ({
+                        ...r,
+                        [p.productId]: { ...(r[p.productId] || { rating: 0, comment: "" }), comment: e.target.value },
+                      }))
+                    }
+                  />
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      className="btn btn-sm btn-primary"
+                      disabled={reviews[p.productId]?.submitting || reviews[p.productId]?.submitted}
+                      onClick={() => submitReview(p.productId)}
+                    >
+                      {reviews[p.productId]?.submitted
+                        ? "Submitted"
+                        : reviews[p.productId]?.submitting
+                        ? "Submitting..."
+                        : "Submit Review"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <Toaster
         position="top-center"
         reverseOrder={false}

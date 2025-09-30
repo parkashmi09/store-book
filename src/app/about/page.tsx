@@ -11,41 +11,58 @@ const Page = () => {
   return (
     <>
       <Navbar />
-      <div className="p-5 space-y-4">
-        <p className="font-bold text-xl">About Us</p>
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white py-14 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full"></div>
+          <div className="absolute top-28 right-20 w-16 h-16 bg-yellow-400/30 rounded-full"></div>
+          <div className="absolute bottom-16 left-1/4 w-12 h-12 bg-pink-400/20 rounded-full"></div>
+        </div>
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-200">About Us</h1>
+          <p className="text-blue-100 text-lg md:text-xl">Learn about our mission, values, and commitment to education.</p>
+        </div>
+      </div>
 
-        <p>
-          Welcome to <strong>Service and Education</strong>, your trusted destination for high-quality educational books and resources.
-        </p>
+      {/* Content Section */}
+      <div className="px-4 py-12 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-10">
+            <div className="space-y-5 text-gray-700 leading-7">
+              <p className="text-lg">
+                Welcome to <strong>Service and Education</strong>, your trusted destination for high-quality educational books and resources.
+              </p>
 
-        <p>
-          Operated by <strong>Kundan Kumar</strong>, our platform is dedicated to supporting students, educators, and learners by providing carefully selected books that align with academic standards and competitive exam requirements.
-        </p>
+              <p>
+                Operated by <strong>Kundan Kumar</strong>, our platform is dedicated to supporting students, educators, and learners by providing carefully selected books that align with academic standards and competitive exam requirements.
+              </p>
 
-        <p>
-          Our mission is to empower individuals through accessible and affordable education. Whether you're preparing for exams or deepening your knowledge, our curated selection of books is here to support your journey.
-        </p>
+              <p>
+                Our mission is to empower individuals through accessible and affordable education. Whether you're preparing for exams or deepening your knowledge, our curated selection of books is here to support your journey.
+              </p>
 
-        <p>
-          What sets us apart is our commitment to quality, authenticity, and customer satisfaction. Every book we offer is sourced with care to ensure accuracy, relevance, and educational value.
-        </p>
+              <p>
+                What sets us apart is our commitment to quality, authenticity, and customer satisfaction. Every book we offer is sourced with care to ensure accuracy, relevance, and educational value.
+              </p>
 
-        <p>
-          From school textbooks to exam preparation materials, <strong>Service and Education by Kundan Kumar</strong> is here to guide your learning journey.
-        </p>
+              <p>
+                From school textbooks to exam preparation materials, <strong>Service and Education by Kundan Kumar</strong> is here to guide your learning journey.
+              </p>
 
-        <p>
-          Thank you for choosing us. Join our growing community of learners and experience the difference.
-        </p>
+              <p>
+                Thank you for choosing us. Join our growing community of learners and experience the difference.
+              </p>
 
-        <div className="pt-4">
-          <p className="font-semibold">
-            📍 You can visit our office:
-          </p>
-          <p>
-            Aadarsh Colony, Road No. 4, Khemnichak,<br />
-            Patna, Bihar – 800027
-          </p>
+              <div className="pt-4">
+                <p className="font-semibold text-gray-900">📍 You can visit our office:</p>
+                <p>
+                  Aadarsh Colony, Road No. 4, Khemnichak,<br />
+                  Patna, Bihar – 800027
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <Footer />

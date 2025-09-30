@@ -98,6 +98,7 @@ const Login = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                     phone:phoneNumber,
                     password,
@@ -109,6 +110,9 @@ const Login = () => {
                 // const encryptedUserData = CryptoJS.AES.encrypt(JSON.stringify(data.data), "secretKey").toString();
                 sessionStorage.setItem('token',data.token)
                 sessionStorage.setItem('user', JSON.stringify(data.data));
+                // Persist additionally in localStorage for reliability
+                localStorage.setItem('token', data.token)
+                localStorage.setItem('user', JSON.stringify(data.data))
 
                 // auth(data.token,data.data.phone)
                 let guest=localStorage.getItem('guest')
@@ -220,13 +224,17 @@ const Login = () => {
                 }),
             })
         const data=await response.json()
-        if(response.status===201){
+        if(response.ok && (response.status===200 || response.status===201)){
             if(forgotpsw==1){
                 setForgotpsw(2)
             }else{
+                console.log(data.token,"data is like")
                 setCookie('token', data.token, 60);
                 sessionStorage.setItem('token',data.token)
                 sessionStorage.setItem('user', JSON.stringify(data.data));
+                // Persist additionally in localStorage for reliability
+                localStorage.setItem('token', data.token)
+                localStorage.setItem('user', JSON.stringify(data.data))
                 toast.success("OTP verified successfully")
 
                 let guest=localStorage.getItem('guest')
@@ -340,7 +348,8 @@ const Login = () => {
                 // toast.success('Login success');
                 router.push('/bag', { scroll: true })
             }
-            localStorage.clear()
+            // Only remove guest data, keep auth info intact
+            localStorage.removeItem('guest')
         } catch (error) {
             // @ts-ignore
             console.error('Error adding guest bag:', error.message);
@@ -526,7 +535,7 @@ const Login = () => {
                                                         </button>
                                                     </label>
                                                     <input
-                                                        type="mumber"
+                                                        type="number"
                                                         placeholder="6 Digit OTP"
                                                         className="input border-gray-300 rounded-xl !outline-none transition delay-150 c-shadow"
                                                         required
@@ -572,7 +581,7 @@ const Login = () => {
                                                         </button>
                                                     </label>
                                                     <input
-                                                        type="mumber"
+                                                        type="number"
                                                         placeholder="6 Digit OTP"
                                                         className="input border-gray-300 rounded-xl !outline-none transition delay-150 c-shadow"
                                                         required

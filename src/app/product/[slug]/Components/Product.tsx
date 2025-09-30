@@ -1,18 +1,10 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Magnifier as MagnifierType,
-  GlassMagnifier,
-  SideBySideMagnifier,
-  PictureInPictureMagnifier,
-  MOUSE_ACTIVATION,
-  TOUCH_ACTIVATION,
-  MagnifierPreview,
-  MagnifierContainer,
-  MagnifierZoom as MagnifierZoomType,
-} from "react-image-magnifiers";
-import { Image as ZoomImg } from "react-fullscreen-image";
+// Removed react-image-magnifiers due to compatibility issues
+// Removed react-fullscreen-image - using modal instead
+import Zoom from 'react-medium-image-zoom';
+import 'react-medium-image-zoom/dist/styles.css';
 import {
   Accordion,
   AccordionBody,
@@ -54,7 +46,6 @@ import { convertUTCToIST } from "@/util/convertDate";
 import Recommendation from "@/app/Components/Recommendation";
 import Releted from "@/app/Components/Releted";
 import Loading from "@/app/Components/Loading";
-import { ImageGroup } from "react-fullscreen-image/src";
 import {
   IoIosArrowDropdownCircle,
   IoIosArrowDropupCircle,
@@ -68,15 +59,14 @@ const Product = () => {
   const [isLoading, setIsLoading] = useState<any>();
   let user: any = sessionStorage.getItem("user") || null;
   user = JSON.parse(user);
-  const Magnifier = MagnifierType as React.ComponentType<any>;
-  const MagnifierZoom = MagnifierZoomType as React.ComponentType<any>;
+  // Removed magnifier components - using react-fullscreen-image instead
 
   const [productId, setProductId] = useState<any>();
   const [bookTab, setBookTab] = useState<any>(0);
-  const [reviews, setReviews] = useState<any>([]);
+  const [reviews, setReviews] = useState<any>([]); 
   const [pinCode, setPinCode] = useState<any>();
   const [quantity, setQuantity] = useState<any>(1);
-  const [zoom, setZoom] = useState<any>(false);
+  const [showImageModal, setShowImageModal] = useState<any>(false);
   const [checkBag, setCheckBag] = useState<any>(false);
   const [acc, setAcc] = useState<any>();
   const [size, setSize] = useState<any>();
@@ -314,12 +304,30 @@ const Product = () => {
   };
   const shareUrl: any = window.location.href;
 
+  // Handle keyboard events for image modal
   useEffect(() => {
-    if (zoom) {
-      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-      // containerRef.current.click()
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (showImageModal) {
+        if (event.key === 'Escape') {
+          setShowImageModal(false);
+        } else if (event.key === 'ArrowLeft' && product?.images && product.images.length > 1) {
+          setImgIndex(imgIndex > 0 ? imgIndex - 1 : product.images.length - 1);
+        } else if (event.key === 'ArrowRight' && product?.images && product.images.length > 1) {
+          setImgIndex(imgIndex < product.images.length - 1 ? imgIndex + 1 : 0);
+        }
+      }
+    };
+
+    if (showImageModal) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
     }
-  }, [zoom]);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showImageModal, imgIndex, product?.images]);
 
   return (
     <>
@@ -406,39 +414,27 @@ const Product = () => {
                 <div className="sticky top-20">
                   <div className="card m-auto  w-[30rem] max-sm:w-full  bg-base-400 c-shadow">
                     <figure className="rounded-xl c-aspect1 max-sm:w-auto block ">
-                      <img
-                        className="hidden max-sm:block"
-                        src={
-                          product?.images && product?.images.length > imgIndex
-                            ? product?.images[imgIndex]
-                            : ""
-                        }
-                        alt={""}
-                      />
-                      <Magnifier
-                        className="max-sm:hidden"
-                        imageSrc={
-                          product?.images && product?.images.length > imgIndex
-                            ? product?.images[imgIndex]
-                            : ""
-                        }
-                        imageAlt={"kj"}
-                        mouseActivation={MOUSE_ACTIVATION.CLICK}
-                        touchActivation={TOUCH_ACTIVATION.TAP}
-                        onZoomStart={() => setZoom(true)}
-                        onZoomEnd={() => setZoom(false)}
-                      />
+                      {product?.images && product?.images[imgIndex] ? (
+                        <img
+                          className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          src={product?.images[imgIndex]}
+                          alt={product?.name || "Product image"}
+                          onClick={() => setShowImageModal(true)}
+                          title="Click to zoom"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-500">No image available</span>
+                        </div>
+                      )}
                     </figure>
                   </div>
                   <div
                     className="items-center flex m-4 gap-4 mt-[-50px] max-sm:mt-[-30px] overflow-x-auto"
-                    onFocus={() => setZoom(false)}
-                    onFocusCapture={() => setZoom(false)}
                   >
                     {product?.images?.map((itm: any, key: any) => (
                       <div
                         key={key}
-                        onFocusCapture={() => setZoom(false)}
                         className="avatar"
                       >
                         <div
@@ -446,11 +442,13 @@ const Product = () => {
                             imgIndex === key ? "border-2 border-blue-700" : ""
                           }`}
                         >
-                          <img
-                            src={itm}
-                            className="c-shadow"
-                            onClick={() => setImgIndex(key)}
-                          />
+                          <Zoom>
+                            <img
+                              src={itm}
+                              className="c-shadow cursor-zoom-in"
+                              onClick={() => setImgIndex(key)}
+                            />
+                          </Zoom>
                         </div>
                       </div>
                     ))}
@@ -459,7 +457,6 @@ const Product = () => {
                   {product?.stock == 0 ? null : (
                     <div
                       className="grid grid-cols-2 items-center gap-2 max-sm:hidden"
-                      onFocusCapture={() => setZoom(false)}
                     >
                       {!checkBag ? (
                         <button
@@ -496,7 +493,6 @@ const Product = () => {
                   )}
 
                   <div
-                    onFocusCapture={() => setZoom(false)}
                     className="fixed   bottom-0  hidden max-sm:block  left-0 right-0 px-3 lg:px-0 py-4
                                         lg:pt-6 lg:pb-0 lg:py-0  shadow-top md:shadow-none rounded-t-lg bg-white !z-[999999] md:rounded-none
                                         "
@@ -538,12 +534,7 @@ const Product = () => {
                 </div>
               </div>
               <div className="w-full   p-2 pl-10 max-sm:p-2">
-                {zoom ? (
-                  <MagnifierZoom
-                    className="h-screen-85 max-sm:hidden c-shadow "
-                    imageSrc={product?.images[imgIndex]}
-                  />
-                ) : null}
+                {/* Zoom functionality now handled by react-fullscreen-image */}
                 <div>
                   <p className=" text-xl font-medium max-sm:text-sm ">
                     {product?.name}
@@ -1038,6 +1029,61 @@ const Product = () => {
                 <Releted ids={product?.productId} cate={product?.category} />
               </div>
             ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* Image Zoom Modal */}
+      {showImageModal && (
+        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-75 flex items-center justify-center p-4">
+          <div className="relative max-w-4xl max-h-full w-full h-full flex items-center justify-center">
+            {/* Close button */}
+            <button
+              className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 hover:bg-gray-100 transition-colors"
+              onClick={() => setShowImageModal(false)}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {/* Previous/Next buttons */}
+            {product?.images && product.images.length > 1 && (
+              <>
+                <button
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 hover:bg-gray-100 transition-colors"
+                  onClick={() => setImgIndex(imgIndex > 0 ? imgIndex - 1 : product.images.length - 1)}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 hover:bg-gray-100 transition-colors"
+                  onClick={() => setImgIndex(imgIndex < product.images.length - 1 ? imgIndex + 1 : 0)}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            )}
+
+            {/* Main zoomed image with react-medium-image-zoom */}
+            <Zoom>
+              <img
+                className="max-w-full max-h-full object-contain cursor-zoom-in"
+                src={product?.images[imgIndex]}
+                alt={product?.name || "Product image"}
+              />
+            </Zoom>
+
+            {/* Image counter */}
+            {product?.images && product.images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-full px-3 py-1 text-sm">
+                {imgIndex + 1} / {product.images.length}
+              </div>
+            )}
           </div>
         </div>
       )}
