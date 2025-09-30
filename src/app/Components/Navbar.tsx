@@ -395,7 +395,7 @@ const Navbar = () => {
                 <ul className="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
                     <li><Link href="/"><FaHome /> Home</Link></li>
                     <li><Link href="/account/orders"><FaClipboardList /> Orders</Link></li>
-                    <li><a href="#download"><FaDownload /> Download Our App</a></li>
+                    <li><a href="https://play.google.com/store/apps/details?id=co.targetboardboardprep&hl=en_IN" target="_blank" rel="noopener noreferrer"><FaDownload /> Download Our App</a></li>
                     <li><Link href="/contact"><FaPhone /> Contact Us</Link></li>
                     <li>
                         <details>

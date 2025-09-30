@@ -86,6 +86,14 @@ const ContactPageClient = () => {
             description: "Sat: 10AM - 4PM",
             color: "bg-orange-100 text-orange-600",
             link: "#"
+        },
+        {
+            icon: <FaWhatsapp className="text-2xl" />,
+            title: "WhatsApp",
+            content: "9798190774",
+            description: "Chat with us on WhatsApp",
+            color: "bg-green-100 text-green-600",
+            link: "https://wa.me/919798190774"
         }
     ];
 
