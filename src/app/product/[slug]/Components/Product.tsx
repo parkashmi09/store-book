@@ -71,6 +71,7 @@ const Product = () => {
   const [acc, setAcc] = useState<any>();
   const [size, setSize] = useState<any>();
   const [color, setColor] = useState<any>();
+  const [showConfetti, setShowConfetti] = useState<any>(false);
 
   const [tab, setTab] = useState<number>(0);
   const faqs = [
@@ -153,6 +154,10 @@ const Product = () => {
           sessionStorage.setItem("mybag", it);
           // window.dispatchEvent(new Event("storage"));
           checkBagStatus(product.productId);
+          
+          // Trigger confetti animation after successful add to cart
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 3000);
         }
         if (flag) {
           router.push("/bag");
@@ -190,6 +195,10 @@ const Product = () => {
 
       let total: number = parseInt(localStorage.getItem("mybag") || "0") + 1;
       localStorage.setItem("mybag", total.toString());
+
+      // Trigger confetti animation after successful add to cart
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
 
       if (flag) {
         router.push("/bag");
@@ -331,6 +340,21 @@ const Product = () => {
 
   return (
     <>
+      {showConfetti && (
+        <div className="confetti-container">
+          {[...Array(50)].map((_, i) => (
+            <div 
+              key={i} 
+              className="confetti" 
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                backgroundColor: ['#667eea', '#764ba2', '#48bb78', '#ed8936', '#e53e3e'][Math.floor(Math.random() * 5)]
+              }}
+            />
+          ))}
+        </div>
+      )}
       {isLoading ? (
         <Loading />
       ) : (
@@ -460,7 +484,7 @@ const Product = () => {
                     >
                       {!checkBag ? (
                         <button
-                          className="btn btn-neutral border-blue-600 text-blue-600  btn-outline"
+                          className="btn btn-neutral border-blue-600 text-blue-600 btn-outline"
                           onClick={() => addToBag(false)}
                         >
                           <IoBagHandleOutline /> Add to Cart
@@ -500,7 +524,7 @@ const Product = () => {
                     <div className="grid grid-cols-2 gap-2 md:gap-6 justify-items-center bg-white !z-60 ">
                       {!checkBag ? (
                         <button
-                          className="btn btn-neutral !z-60 border-blue-600 w-full text-blue-600  btn-outline"
+                          className="btn btn-neutral !z-60 border-blue-600 w-full text-blue-600 btn-outline"
                           onClick={() => addToBag(false)}
                         >
                           <IoBagHandleOutline /> Add to Cart

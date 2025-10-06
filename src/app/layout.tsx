@@ -105,11 +105,11 @@ export default function RootLayout({
       <body className={inter.className}>
         {children}
 
-        {/* Razorpay - Load early for checkout */}
+        {/* Cashfree - Hosted/SDK script (sandbox/production compatible) */}
         <Script
-          src="https://checkout.razorpay.com/v1/checkout.js"
+          id="cashfree-sdk"
+          src="https://sdk.cashfree.com/js/v3/cashfree.js"
           strategy="beforeInteractive"
-          id="razorpay-sdk"
         />
 
         {/* Hotjar */}

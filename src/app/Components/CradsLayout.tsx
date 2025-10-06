@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { FaStar } from "react-icons/fa";
 import { FaArrowRightLong } from "react-icons/fa6";
-import ImageShadow from 'react-image-shadow';
-import 'react-image-shadow/assets/index.css';
 import { calculateFinalPrice } from "@/util/calculateFinalPrice";
 import React, { useState } from "react";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
@@ -41,10 +39,10 @@ const CardsLayout = ({ data, name, action }: CardsLayoutProps) => {
                     {
                         data.map((item: any, key: any) => (
                             // href={`/product/${item.slug}`}
-                            <Link href={`/product/${item.slug}`} key={key} className="card border hover:border-blue-500 border-gray-300 rounded-xl bg-base-100  c-shadow2  transition delay-250">
+                            <Link href={`/product/${item.slug}`} key={key} className="border hover:border-blue-500 border-gray-300 rounded-xl bg-base-100  c-shadow2  transition delay-250">
                                 <div className={`${item.tag.toLowerCase().includes("new") ? "ribbon3" : item.tag.toLowerCase().includes("best") ? "ribbon2" : "ribbon"}`}><span>{item.tag}</span></div>
-                                <figure className="p-5 " >
-                                    <ImageShadow src={item.images[0]} className="transition  w-20 ease-in-out delay-150 hover:scale-110 ml-auto mr-auto" />
+                                <figure className="p-3 md:p-5 h-40 md:h-48" >
+                                    <img src={item.images[0]} alt={item.name} className="w-full h-full object-contain transition ease-in-out delay-150" />
                                 </figure>
                                 {/*<div className="hover:block">*/}
                                 {/*    <Carousel showThumbs={false} showArrows={false} showStatus={false}>*/}
@@ -58,8 +56,8 @@ const CardsLayout = ({ data, name, action }: CardsLayoutProps) => {
                                 {/*    </Carousel>*/}
                                 {/*</div>*/}
                                 <div className="card-body p-2 pt-2  ">
-                                    <h2 className="text-lg text-center font-semibold max-sm:text-sm truncate">{item.name}</h2>
-                                    <div className="grid grid-cols-3 items-center max-sm:items-baselinem">
+                                    <h2 className="text-base md:text-lg text-center font-semibold max-sm:text-sm truncate">{item.name}</h2>
+                                    <div className="grid grid-cols-3 items-center max-sm:items-baseline">
                                         <div className="col-span-2">
                                             {
                                                 item.discount ?

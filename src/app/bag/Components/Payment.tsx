@@ -2,7 +2,7 @@ import axios from "axios";
 import { API_URL } from "@/util/base_url";
 import Product from "@/app/bag/Components/MyBag";
 import toast, { Toaster } from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface PaymentProps {
@@ -27,6 +27,7 @@ const Payment = ({
   discount_payment,
 }: PaymentProps) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [data, setData] = useState<any>([]);
   const [isMobile, setIsMobile] = useState(false);
   const [showReview, setShowReview] = useState(false);
@@ -40,6 +41,30 @@ const Payment = ({
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
     getProducts(productIds);
   }, [productIds]);
+
+  // Detect Cashfree return and show review on success
+  useEffect(() => {
+    const cfOrderId = searchParams?.get("order_id");
+    const cfStatus = searchParams?.get("order_status");
+    const cfPaymentId = searchParams?.get("payment_id");
+    if (cfOrderId && cfStatus) {
+      (async () => {
+        try {
+          if (cfStatus.toLowerCase() === "paid" || cfStatus.toLowerCase() === "success") {
+            await updateOrder(cfOrderId, cfPaymentId, "");
+            toast.success("Order Processed Successfully");
+            sessionStorage.setItem("settingtab", "1");
+            sessionStorage.setItem("mybag", "0");
+            setShowReview(true);
+          } else {
+            toast.error("Payment not completed");
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      })();
+    }
+  }, [searchParams]);
 
   const getProducts = async (para: string[]) => {
     const token: any = sessionStorage.getItem("token") || " ";
@@ -111,9 +136,9 @@ const Payment = ({
   };
 
   async function createOrder(
-    razorpay_order_id: any,
-    razorpay_payment_id: any,
-    razorpay_signature: any,
+    cf_order_id: any,
+    cf_payment_id: any,
+    _unused: any,
     payment_status: any
   ) {
     try {
@@ -129,9 +154,9 @@ const Payment = ({
             userId: user.id,
             products: data,
             addressId: selectedAddressId,
-            razorpay_order_id,
-            razorpay_payment_id,
-            razorpay_signature,
+            razorpay_order_id: cf_order_id,
+            razorpay_payment_id: cf_payment_id,
+            razorpay_signature: null,
             amount,
             shipping_charge,
             discount_price: parseInt(discount_payment),
@@ -153,9 +178,9 @@ const Payment = ({
   }
 
   async function updateOrder(
-    razorpay_order_id: any,
-    razorpay_payment_id: any,
-    razorpay_signature: any
+    cf_order_id: any,
+    cf_payment_id: any,
+    _unused?: any
   ) {
     try {
       if (data.length > 0) {
@@ -167,9 +192,9 @@ const Payment = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            razorpay_order_id,
-            razorpay_payment_id,
-            razorpay_signature,
+            razorpay_order_id: cf_order_id,
+            razorpay_payment_id: cf_payment_id,
+            razorpay_signature: null,
             payment_status: true,
           }),
         });
@@ -187,176 +212,80 @@ const Payment = ({
 
   const checkoutHandler = async (amount: any) => {
     try {
-      const key = "rzp_live_5FnnvEf6D23aU2";
-      const token: any = sessionStorage.getItem("token");
+      const totalAmount = parseFloat(amount) + parseFloat(shipping_charge);
+      const returnUrl = `${window.location.origin}/bag?order_id={order_id}&order_status={order_status}&payment_id={payment_id}`;
 
-      // Create Razorpay order
-      const response = await fetch(`${API_URL}/checkout`, {
+      // 1) Call existing checkout API first (as earlier with Razorpay)
+      const token: any = sessionStorage.getItem("token") || "";
+      const checkoutRes = await fetch(`${API_URL}/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-access-token": token,
         },
-        body: JSON.stringify({
-          amount: parseFloat(amount) + parseFloat(shipping_charge),
-        }),
+        body: JSON.stringify({ amount: totalAmount }),
       });
+      const checkoutData = await checkoutRes.json();
+      if (!checkoutRes.ok) {
+        throw new Error(checkoutData?.error || "Checkout initialization failed");
+      }
+      const order = checkoutData?.order || {};
 
-      const { order } = await response.json();
+      // Common shapes we might receive from backend for Cashfree
+      const cf = checkoutData?.cashfreeResponse || checkoutData?.order || checkoutData;
 
-      // Create initial order record
-      await createOrder(order.id, null, null, false);
+      // 2) Create initial order record in our system (use cf/order id if available)
+      const initialOrderId = cf?.order_id || order?.id;
+      await createOrder(initialOrderId, null, null, false);
 
-      const options = {
-        key,
-        amount: order.amount,
-        currency: "INR",
-        name: "Target Board Store",
-        description: "Purchase Payment",
-        order_id: order.id,
-        handler: async function (response: any) {
-          try {
-            const response1: any = await fetch(
-              `${API_URL}/payment-verification`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "x-access-token": token,
-                },
-                body: JSON.stringify({
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                }),
-              }
-            );
+      // 3) Open Cashfree checkout using session from checkout response (no external call)
+      const paymentSessionId = cf?.payment_session_id;
+      if (!paymentSessionId) {
+        throw new Error("Payment session ID missing");
+      }
+      const finalReturnUrl = cf?.order_meta?.return_url || returnUrl;
 
-            const result = await response1.json();
-            if (result.success) {
-              await updateOrder(
-                response.razorpay_order_id,
-                response.razorpay_payment_id,
-                response.razorpay_signature
-              );
-              toast.success("Order Processed Successfully");
-              sessionStorage.setItem("settingtab", "1");
-              sessionStorage.setItem("mybag", "0");
-              router.push("/account/orders");
-            } else {
-              toast.error("Payment Verification Failed");
-            }
-          } catch (error) {
-            console.error("Payment verification error:", error);
-            toast.error("Payment Processing Failed");
-          }
-        },
-        prefill: {
-          name: user.name,
-          email: user.email,
-          contact: user.phone,
-        },
-        config: {
-          display: {
-            blocks: {
-              utib: {
-                name: "Pay using QR",
-                instruments: [
-                  {
-                    method: "upi",
-                    flows: ["qr"], // Explicitly enable both QR and intent flows
-                  },
-                ],
-              },
-              other: {
-                name: "Other Payment Methods",
-                instruments: [
-                  {
-                    method: "card",
-                  },
-                  {
-                    method: "netbanking",
-                  },
-                  {
-                    method: "wallet",
-                  },
-                ],
-              },
-            },
-            sequence: ["block.banks"],
-            preferences: {
-              show_default_blocks: true, // Enable default display blocks
-            },
-          },
-        },
-        modal: {
-          confirm_close: true,
-          handleback: true,
-          escape: false,
-          animation: true,
-          backdropClose: false,
-        },
-        retry: {
-          enabled: true,
-          max_count: 3,
-        },
-        timeout: 300,
-        notes: {
-          address: "Target Board Store",
-        },
-        theme: {
-          color: "#121212",
-          backdrop_color: "rgba(0, 0, 0, 0.7)",
-        },
-      };
-      //@ts-ignore
-      const razor = new window.Razorpay(options);
-
-      // Add specific event handlers for QR code
-      razor.on("payment.failed", function (response: any) {
-        toast.error("Payment Failed. Please try again.");
-      });
-
-      razor.on("ready", function (response: any) {
-        // Force QR refresh when payment screen is ready
-        if (isMobile) {
-          const qrButton = document.querySelector('[data-test-id="qr-button"]');
-          if (qrButton) {
-            (qrButton as HTMLElement).click();
-          }
+      // Try SDK checkout first
+      const cashfreeFactory = (window as any).Cashfree;
+      const cashfree = typeof cashfreeFactory === "function" ? cashfreeFactory({ mode: "sandbox" }) : null;
+      if (cashfree && cashfree.checkout) {
+        try {
+          await cashfree.checkout({ paymentSessionId });
+          return;
+        } catch (sdkErr) {
+          console.warn("Cashfree SDK checkout failed, falling back", sdkErr);
         }
-      });
+      }
 
-      razor.open();
-    } catch (error) {
+      // Fallback to hosted redirect
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "https://sandbox.cashfree.com/pg/process/session";
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = "payment_session_id";
+      input.value = paymentSessionId;
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+    } catch (error: any) {
       console.error("Checkout error:", error);
-      toast.error("Failed to initialize payment");
+      toast.error(error?.message || "Failed to initialize payment");
     }
   };
 
   return (
     <div className="w-full">
-      {/* Payment Button (kept for later use) */}
-      {/*
       <button
         className="w-full btn btn-secondary disabled:bg-blue-400 disabled:cursor-not-allowed py-3 px-6 rounded-lg font-semibold"
-        disabled={!selectedAddressId}
+        disabled={!selectedAddressId || data.length === 0}
         onClick={() => checkoutHandler(amount)}
       >
         Pay ₹{parseFloat(amount) + parseFloat(shipping_charge)}
       </button>
-      */}
 
       {/* Ratings entry point */}
-      {!showReview ? (
-        <button
-          className="w-full btn btn-primary disabled:bg-blue-400 disabled:cursor-not-allowed py-3 px-6 rounded-lg font-semibold"
-          disabled={!selectedAddressId || data.length === 0}
-          onClick={() => setShowReview(true)}
-        >
-          Rate Purchased Products
-        </button>
-      ) : (
+      {showReview && (
         <div className="card bg-white border shadow-md mt-3">
           <div className="card-body !p-3">
             <h3 className="card-title">Rate your products</h3>

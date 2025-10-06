@@ -189,7 +189,7 @@ const VideoTestimonialSwiper: React.FC<VideoTestimonialSwiperProps> = ({ data })
   };
 
   return (
-    <div className="bg-black py-20 px-4 relative overflow-hidden">
+    <div className="bg-gradient-to-br from-yellow-100 via-orange-200 to-yellow-500 py-16 px-4 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
@@ -200,14 +200,14 @@ const VideoTestimonialSwiper: React.FC<VideoTestimonialSwiperProps> = ({ data })
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header Section */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-6 py-2 mb-6 border border-white/20">
+          <div className="inline-flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-full px-6 py-2 mb-6 border border-white/60">
             <FaStar className="w-5 h-5 text-yellow-400" />
-            <span className="text-white/90 font-medium">Customer Stories</span>
+            <span className="text-gray-800 font-medium">Customer Stories</span>
           </div>
-          <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             What Our Customers Say
           </h2>
-          <p className="text-white/80 text-xl md:text-2xl max-w-4xl mx-auto leading-relaxed">
+          <p className="text-gray-700 text-xl md:text-2xl max-w-4xl mx-auto leading-relaxed">
             Real experiences from book lovers who found their perfect reads with us
           </p>
         </div>
@@ -216,8 +216,8 @@ const VideoTestimonialSwiper: React.FC<VideoTestimonialSwiperProps> = ({ data })
         {loading && (
           <div className="flex justify-center items-center h-96">
             <div className="flex flex-col items-center gap-4">
-              <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
-              <p className="text-white/80">Loading video testimonials...</p>
+              <div className="w-16 h-16 border-4 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+              <p className="text-gray-700">Loading video testimonials...</p>
             </div>
           </div>
         )}
@@ -234,7 +234,7 @@ const VideoTestimonialSwiper: React.FC<VideoTestimonialSwiperProps> = ({ data })
         {!loading && !error && displayTestimonials.length > 0 && (
           <>
             {/* Carousel Container */}
-            <div className="relative md:h-[600px] flex items-center justify-center">
+            <div className="relative md:h-[500px] flex items-center justify-center">
               {getVisibleCards().map((testimonial, index) => {
                 const cardPosition = testimonial.position;
                 const isCenter = cardPosition === 'center';
@@ -253,12 +253,12 @@ const VideoTestimonialSwiper: React.FC<VideoTestimonialSwiperProps> = ({ data })
                         : 'md:z-20 md:translate-x-80 md:scale-90 md:opacity-70'
                     }`}
                   >
-                    <div className="bg-white backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200 p-6 md:p-8 w-full max-w-md md:w-96 md:h-[500px] relative overflow-hidden group hover:shadow-3xl transition-all duration-500">
+                    <div className="bg-white backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200 p-6 md:p-8 w-full max-w-md md:w-96 md:h-[450px] relative overflow-hidden group hover:shadow-3xl transition-all duration-500">
                       {/* Subtle Overlay */}
                       <div className="absolute inset-0 bg-gray-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       
                       {/* Video Section */}
-                      <div className="relative mb-4 md:mb-6 h-40 md:h-48 rounded-2xl overflow-hidden shadow-lg">
+                      <div className="relative mb-4 md:mb-6 h-40 md:h-40 rounded-2xl overflow-hidden shadow-lg">
                         {isPlaying === testimonial.id ? (
                           <iframe
                             className="w-full h-full"
@@ -426,19 +426,19 @@ const VideoTestimonialSwiper: React.FC<VideoTestimonialSwiperProps> = ({ data })
 
             {/* Auto-play controls */}
             <div className="text-center mt-8">
-              <div className="inline-flex items-center gap-4 text-white/60 text-sm">
+              <div className="inline-flex items-center gap-4 text-gray-600 text-sm">
                 <button
                   onClick={toggleAutoPlay}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/20"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 hover:bg-white/80 transition-all duration-300 backdrop-blur-sm border border-gray-200"
                 >
                   {isAutoPlaying ? (
                     <>
-                      <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></div>
                       <span>Auto-playing every 6 seconds</span>
                     </>
                   ) : (
                     <>
-                      <div className="w-2 h-2 bg-white/60 rounded-full"></div>
+                      <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
                       <span>Auto-play paused</span>
                     </>
                   )}

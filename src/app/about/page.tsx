@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import Navbar from "@/app/Components/Navbar";
 import Footer from "@/app/Components/Footer";
+import Image from "next/image";
+import aboutLeft from "@/app/Assets/about-us-left.webp";
 
 export const metadata: Metadata = {
   title: "About us | Service & Education",
@@ -65,6 +67,48 @@ const Page = () => {
           </div>
         </div>
       </div>
+
+      {/* Bottom Image + Text Section */}
+      <section className="px-4 pb-14 bg-gray-50">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center">
+          {/* Left Image */}
+          <div
+            className="image-with-text__media image-with-text__media--adapt global-media-settings background-transparent media relative"
+            style={{ paddingBottom: "100%" }}
+          >
+            <Image
+              src={aboutLeft}
+              alt="About Us visual"
+              fill
+              className="object-contain"
+              sizes="(min-width: 1200px) 550px, (min-width: 750px) calc((100vw - 130px) / 2), calc((100vw - 50px) / 2)"
+              priority={false}
+            />
+          </div>
+
+          {/* Right Text */}
+          <div className="text-gray-800">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">About Us</h2>
+            <div className="space-y-4 leading-7">
+              <p>
+                हमारे बारे में – TARGET BOARD एक विश्वसनीय शिक्षा संस्था है, जो विद्यार्थियों
+                को सफलता की ओर मार्गदर्शन करता है।
+              </p>
+              <p>
+                हमारा उद्देश्य छात्रों की प्रतिभा को निखारना और उन्हें उच्चतम परीक्षाओं व भविष्य की
+                चुनौतियों के लिए तैयार करना है। अनुभवी शिक्षक, आधुनिक शिक्षण पद्धतियाँ और सतत
+                मार्गदर्शन के साथ, TARGET BOARD हर विद्यार्थी को उसके लक्ष्य तक पहुँचने में सहायता करता है।
+              </p>
+              <a
+                href="#more-info"
+                className="inline-flex items-center rounded-md bg-gray-800 text-white px-5 py-3 hover:bg-gray-700 transition"
+              >
+                FOR MORE INFO
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
       <Footer />
     </>
   );
