@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { API_URL } from "@/util/base_url";
 import toast from "react-hot-toast";
 
-export default function PaymentRedirectPage() {
+function PaymentRedirectClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [statusText, setStatusText] = useState<string>("verifying");
@@ -85,6 +85,14 @@ export default function PaymentRedirectPage() {
       {statusText === "failed" && <p>Payment failed! Please try again.</p>}
       {statusText === "error" && <p>Error verifying payment. Please contact support.</p>}
     </div>
+  );
+}
+
+export default function PaymentRedirectPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[40vh] flex items-center justify-center"><p>Loading...</p></div>}>
+      <PaymentRedirectClient />
+    </Suspense>
   );
 }
 
