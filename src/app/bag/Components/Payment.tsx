@@ -1,3 +1,4 @@
+"use client";
 import axios from "axios";
 import { API_URL } from "@/util/base_url";
 import Product from "@/app/bag/Components/MyBag";
@@ -51,7 +52,8 @@ const Payment = ({
       (async () => {
         try {
           if (cfStatus.toLowerCase() === "paid" || cfStatus.toLowerCase() === "success") {
-            await updateOrder(cfOrderId, cfPaymentId, "");
+            // Create the order AFTER successful payment as requested
+            await createOrder(cfOrderId, cfPaymentId, "", true);
             toast.success("Order Processed Successfully");
             sessionStorage.setItem("settingtab", "1");
             sessionStorage.setItem("mybag", "0");
@@ -223,7 +225,12 @@ const Payment = ({
           "Content-Type": "application/json",
           "x-access-token": token,
         },
-        body: JSON.stringify({ amount: totalAmount }),
+        body: JSON.stringify({
+          amount: totalAmount,
+          userId: user?.id,
+          customerEmail: (address && (address.email || address.customerEmail)) || user?.email,
+          customerPhone: (address && (address.phone || address.customerPhone || address.mobile)) || user?.phone,
+        }),
       });
       const checkoutData = await checkoutRes.json();
       if (!checkoutRes.ok) {
@@ -234,9 +241,7 @@ const Payment = ({
       // Common shapes we might receive from backend for Cashfree
       const cf = checkoutData?.cashfreeResponse || checkoutData?.order || checkoutData;
 
-      // 2) Create initial order record in our system (use cf/order id if available)
-      const initialOrderId = cf?.order_id || order?.id;
-      await createOrder(initialOrderId, null, null, false);
+      // 2) Do NOT create order before payment; we'll create it after success
 
       // 3) Open Cashfree checkout using session from checkout response (no external call)
       const paymentSessionId = cf?.payment_session_id;
@@ -245,7 +250,34 @@ const Payment = ({
       }
       const finalReturnUrl = cf?.order_meta?.return_url || returnUrl;
 
-      // Try SDK checkout first
+      // Save pending order context for redirect handler
+      try {
+        const pendingCtx = {
+          userId: user?.id,
+          products: data,
+          addressId: selectedAddressId,
+          amount,
+          shipping_charge,
+          discount_price: parseInt(discount_payment),
+          offerId: offer?.offerId || 0,
+          sub_amount,
+        };
+        localStorage.setItem("pendingOrderCtx", JSON.stringify(pendingCtx));
+      } catch (_) {}
+
+      // Try SDK checkout first (wait briefly if script hasn't finished loading)
+      const waitForCashfree = async () => {
+        const maxWaitMs = 3000;
+        const stepMs = 100;
+        let waited = 0;
+        while (!(window as any).Cashfree && waited < maxWaitMs) {
+          await new Promise((r) => setTimeout(r, stepMs));
+          waited += stepMs;
+        }
+      };
+      if (!(window as any).Cashfree) {
+        await waitForCashfree();
+      }
       const cashfreeFactory = (window as any).Cashfree;
       const cashfree = typeof cashfreeFactory === "function" ? cashfreeFactory({ mode: "sandbox" }) : null;
       if (cashfree && cashfree.checkout) {
