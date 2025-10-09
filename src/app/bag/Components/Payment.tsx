@@ -233,6 +233,20 @@ const Payment = ({
         }),
       });
       const checkoutData = await checkoutRes.json();
+
+
+      console.log("checkoutData", checkoutData);
+      // Temporarily persist checkout data at order initiation time
+      try {
+        localStorage.setItem(
+          "lastCheckoutData",
+          JSON.stringify({
+            data: checkoutData,
+            storedAt: new Date().toISOString(),
+          })
+        );
+      } catch (_) {}
+
       if (!checkoutRes.ok) {
         throw new Error(checkoutData?.error || "Checkout initialization failed");
       }

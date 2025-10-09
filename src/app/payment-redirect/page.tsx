@@ -18,8 +18,39 @@ function PaymentRedirectClient() {
       }
 
       try {
-        // 1) Verify payment with backend
         const token: any = sessionStorage.getItem("token") || "";
+        const ctxRaw = localStorage.getItem("pendingOrderCtx");
+        const ctx = ctxRaw ? JSON.parse(ctxRaw) : {};
+
+        // 1) Create order first
+        const createRes = await fetch(`${API_URL}/orders/create`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-access-token": token,
+          },
+          body: JSON.stringify({
+            userId: ctx?.userId,
+            products: ctx?.products || [],
+            addressId: ctx?.addressId,
+            cf_order_id: orderId,
+            cf_payment_id: null,
+            razorpay_signature: null,
+            amount: ctx?.amount,
+            shipping_charge: ctx?.shipping_charge,
+            discount_price: ctx?.discount_price,
+            offerId: ctx?.offerId || 0,
+            sub_amount: ctx?.sub_amount,
+            payment_status: false,
+          }),
+        });
+
+        if (!createRes.ok) {
+          setStatusText("failed");
+          return;
+        }
+
+        // 2) Verify payment with backend
         const verifyRes = await fetch(`${API_URL}/payment-verification`, {
           method: "POST",
           headers: {
@@ -31,37 +62,6 @@ function PaymentRedirectClient() {
         const verifyData = await verifyRes.json();
 
         if (!verifyRes.ok || !verifyData?.success) {
-          setStatusText("failed");
-          return;
-        }
-
-        // 2) Create order using pending context
-        const ctxRaw = localStorage.getItem("pendingOrderCtx");
-        const ctx = ctxRaw ? JSON.parse(ctxRaw) : {};
-        const createRes = await fetch(`${API_URL}/orders/create`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-access-token": token,
-          },
-          body: JSON.stringify({
-            userId: ctx?.userId,
-            products: ctx?.products || [],
-            addressId: ctx?.addressId,
-            razorpay_order_id: orderId,
-            razorpay_payment_id: verifyData?.orderDetails?.cf_order_id || null,
-            razorpay_signature: null,
-            amount: ctx?.amount,
-            shipping_charge: ctx?.shipping_charge,
-            discount_price: ctx?.discount_price,
-            offerId: ctx?.offerId || "NA",
-
-            sub_amount: ctx?.sub_amount,
-            payment_status: true,
-          }),
-        });
-
-        if (!createRes.ok) {
           setStatusText("failed");
           return;
         }
