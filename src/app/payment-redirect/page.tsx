@@ -41,7 +41,7 @@ function PaymentRedirectClient() {
             amount: ctx?.amount,
             shipping_charge: ctx?.shipping_charge,
             discount_price: ctx?.discount_price,
-         offerId:ctx?.offerId || "NA",
+            offerId: ctx?.offerId || "NA",
             sub_amount: ctx?.sub_amount,
             payment_status: false,
           }),
