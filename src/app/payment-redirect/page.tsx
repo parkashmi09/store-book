@@ -43,7 +43,7 @@ function PaymentRedirectClient() {
             discount_price: ctx?.discount_price,
             offerId: ctx?.offerId || "NA",
             sub_amount: ctx?.sub_amount,
-            // payment_status: true,
+            payment_status: true,
           }),
         });
 
