@@ -22,6 +22,8 @@ function PaymentRedirectClient() {
         const ctxRaw = localStorage.getItem("pendingOrderCtx");
         const ctx = ctxRaw ? JSON.parse(ctxRaw) : {};
 
+        console.log(ctx, "ctx is like");
+
         // 1) Create order first
         const createRes = await fetch(`${API_URL}/orders/create`, {
           method: "POST",
@@ -39,7 +41,7 @@ function PaymentRedirectClient() {
             amount: ctx?.amount,
             shipping_charge: ctx?.shipping_charge,
             discount_price: ctx?.discount_price,
-            offerId: ctx?.offerId || 0,
+         offerId:ctx?.offerId || "NA",
             sub_amount: ctx?.sub_amount,
             payment_status: false,
           }),
