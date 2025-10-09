@@ -86,17 +86,23 @@ function PaymentRedirectClient() {
       {statusText === "verifying" && <p>Verifying payment...</p>}
       {statusText === "success" && <p>Payment successful! Redirecting...</p>}
       {statusText === "failed" && <p>Payment failed! Please try again.</p>}
-      {statusText === "error" && <p>Error verifying payment. Please contact support.</p>}
+      {statusText === "error" && (
+        <p>Error verifying payment. Please contact support.</p>
+      )}
     </div>
   );
 }
 
 export default function PaymentRedirectPage() {
   return (
-    <Suspense fallback={<div className="min-h-[40vh] flex items-center justify-center"><p>Loading...</p></div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-[40vh] flex items-center justify-center">
+          <p>Loading...</p>
+        </div>
+      }
+    >
       <PaymentRedirectClient />
     </Suspense>
   );
 }
-
-
